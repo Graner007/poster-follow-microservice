@@ -1,10 +1,12 @@
 package com.codecool.poster.service;
 
 import com.codecool.poster.model.Follow;
+import com.codecool.poster.model.FollowKey;
 import com.codecool.poster.model.PersonResult;
 import com.codecool.poster.repository.FollowRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,17 +25,17 @@ public class FollowService {
     private String baseUrl;
 
     public void followPerson(long followedId, long followerId) {
-        PersonResult followedPerson = restTemplate.getForEntity(baseUrl + "/" + String.valueOf(followedId), PersonResult.class).getBody();
-        PersonResult followerPerson = restTemplate.getForEntity(baseUrl + "/" + String.valueOf(followerId), PersonResult.class).getBody();
+        ResponseEntity<PersonResult> followedPersonResponse = restTemplate.getForEntity(baseUrl + "/" + String.valueOf(followedId), PersonResult.class);
+        ResponseEntity<PersonResult> followerPersonResponse = restTemplate.getForEntity(baseUrl + "/" + String.valueOf(followerId), PersonResult.class);
 
-        if (personRepository.findById(Long.parseLong(followedId)).isPresent() && personRepository.findById(Long.parseLong(followerId)).isPresent()) {
-            Person followedPerson = personRepository.findById(Long.parseLong(followedId)).get();
-            Person followerPerson = personRepository.findById(Long.parseLong(followerId)).get();
+        if (followedPersonResponse.getStatusCode().is2xxSuccessful() && followerPersonResponse.getStatusCode().is2xxSuccessful()) {
+            PersonResult followedPerson = followedPersonResponse.getBody();
+            PersonResult followerPerson = followerPersonResponse.getBody();
 
-            if (!followRepository.findByFollowerPerson_IdEqualsAndAndFollowedPerson_IdEquals(followerPerson.getId(), followedPerson.getId())) {
+            if (!followRepository.existsById(new FollowKey(followedPerson.getId(), followerPerson.getId()))) {
                 Follow follow = Follow.builder()
-                        .followerPerson(followerPerson)
-                        .followedPerson(followedPerson)
+                        .followedPersonId(followedPerson.getId())
+                        .followerPersonId(followerPerson.getId())
                         .followDate(LocalDateTime.now())
                         .build();
 
@@ -43,6 +45,6 @@ public class FollowService {
             throw new IllegalArgumentException("User already followed");
         }
 
-        throw new UsernameNotFoundException("Username not found!");
+        throw new IllegalArgumentException("Username not found!");
     }
 }
