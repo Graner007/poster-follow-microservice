@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class FollowKey implements Serializable {
 
-    private PersonResult followerPerson;
+    private long followerPersonId;
 
-    private PersonResult followedPerson;
+    private long followedPersonId;
 }
