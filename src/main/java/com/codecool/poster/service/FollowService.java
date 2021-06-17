@@ -1,7 +1,7 @@
 package com.codecool.poster.service;
 
-import com.codecool.poster.model.Follow;
-import com.codecool.poster.model.FollowKey;
+import com.codecool.poster.model.follow.Follow;
+import com.codecool.poster.model.follow.FollowKey;
 import com.codecool.poster.model.PersonResult;
 import com.codecool.poster.repository.FollowRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 @Service
 public class FollowService {
@@ -47,4 +48,6 @@ public class FollowService {
 
         throw new IllegalArgumentException("Username not found!");
     }
+
+    public ResponseEntity getFollowersByPersonId(long personId) { return ResponseEntity.ok(followRepository.findAllByFollowerPersonId(personId)); }
 }
